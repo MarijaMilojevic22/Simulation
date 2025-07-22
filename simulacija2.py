@@ -86,10 +86,10 @@ if st.button("🎲 Run Monte Carlo Simulation"):
     st.markdown(f"- **Probability of reward ≥ 40:** {prob_double:.2%}")
     st.markdown(f"- **Probability of losing everything:** {prob_zero:.2%}")
 
-# Histogram
-df = pd.DataFrame({'Reward': outcomes})
-fig = px.histogram(df, x="Reward", nbins=100,
-                   title="Distribution of Rewards per Game",
-                   labels={"Reward": "Reward per Game (credits)"},
-                   template="plotly_white")
-st.plotly_chart(fig, use_container_width=True)
+    # Histogram
+    df = pd.DataFrame({'Reward': outcomes})
+    fig = px.histogram(df, x="Reward", nbins=100,
+                       title="Distribution of Rewards per Game",
+                       labels={"Reward": "Reward per Game (credits)"},
+                       template="plotly_white")
+    st.plotly_chart(fig, use_container_width=True)
