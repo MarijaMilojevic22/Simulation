@@ -4,37 +4,37 @@ from scipy.signal import convolve2d
 import pandas as pd
 import plotly.express as px
 
-# Naslov i opis
+# Title and description
 st.set_page_config(layout="centered")
-st.markdown("<h2 style='text-align: center;'>🎰 Simulacija Kazino Igre – Monte Carlo Analiza</h2>",
+st.markdown("<h2 style='text-align: center;'>🎰 Casino Game Simulation – Monte Carlo Analysis</h2>",
             unsafe_allow_html=True)
-st.write("Ova simulacija koristi Monte Carlo metodu za procenu dobitaka na osnovu nasumičnog označavanja ćelija i pravila igre.")
+st.write("This simulation uses the Monte Carlo method to estimate rewards based on random cell marking and game rules.")
 
-# Sidebar – parametri
-st.sidebar.header("🔧 Parametri igre")
+# Sidebar – Game Parameters
+st.sidebar.header("🔧 Game Parameters")
 
 P_MARK = st.sidebar.slider(
-    "Verovatnoća označavanja ćelije (P_MARK)",
+    "Probability of marking a cell (P_MARK)",
     min_value=0.01,
     max_value=0.1,
     value=0.025,
     step=0.005,
     format="%.3f"
 )
-LIVES = st.sidebar.slider("Broj života", 1, 5, 3)
-STAKE = st.sidebar.number_input("Ulog po igri (STAKE)", value=20)
-REWARD_3x3 = st.sidebar.number_input("Nagrada za 3x3 blok", value=110)
-REWARD_2x2 = st.sidebar.number_input("Nagrada za 2x2 blok", value=40)
+LIVES = st.sidebar.slider("Number of lives", 1, 5, 3)
+STAKE = st.sidebar.number_input("Stake per game (STAKE)", value=20)
+REWARD_3x3 = st.sidebar.number_input("Reward for 3x3 block", value=110)
+REWARD_2x2 = st.sidebar.number_input("Reward for 2x2 block", value=40)
 MATRIX_SIZE = st.sidebar.selectbox(
-    "Veličina matrice", [4, 5, 6, 7, 8], index=2)
+    "Matrix size", [4, 5, 6, 7, 8], index=2)
 N_SIMULATIONS = st.sidebar.number_input(
-    "Broj Monte Carlo simulacija", value=10000)
+    "Number of Monte Carlo simulations", value=100000)
 
-# Konvolucioni filteri
+# Convolution filters
 filter_3x3 = np.ones((3, 3), dtype=int)
 filter_2x2 = np.ones((2, 2), dtype=int)
 
-# Simulacija jedne igre
+# Single game simulation
 
 
 def simulate_single_game():
@@ -62,29 +62,33 @@ def simulate_single_game():
     return reward
 
 
-# Pokretanje simulacije
-if st.button("🎲 Pokreni Monte Carlo simulaciju"):
-    with st.spinner("Simulacija u toku..."):
+if st.button("🎲 Run Monte Carlo Simulation"):
+    with st.spinner("Simulation in progress..."):
         outcomes = [simulate_single_game() for _ in range(int(N_SIMULATIONS))]
 
     total_reward = sum(outcomes)
     avg_reward = total_reward / N_SIMULATIONS
     win_to_stake = avg_reward / STAKE
+    profit_pct = abs((win_to_stake - 1) * 100)
+    label = "gain" if win_to_stake >= 1 else "loss"
     prob_double = sum(r >= 40 for r in outcomes) / N_SIMULATIONS
     prob_zero = sum(r == 0 for r in outcomes) / N_SIMULATIONS
 
-    # Prikaz statistike
-    st.subheader("📊 Rezultati simulacije:")
-    st.markdown(f"- **Ukupna nagrada:** {total_reward}")
-    st.markdown(f"- **Prosečan dobitak po igri:** {avg_reward:.2f}")
-    st.markdown(f"- **Odnos dobitka i uloga:** {win_to_stake:.4f}")
-    st.markdown(f"- **Verovatnoća dobitka ≥ 40:** {prob_double:.2%}")
-    st.markdown(f"- **Verovatnoća da igrač izgubi sve:** {prob_zero:.2%}")
+    # Statistics display
+    st.subheader("📊 Simulation Results:")
+    st.markdown(f"- **Total reward:** {total_reward}")
+    st.markdown(f"- **Average reward per game:** **{avg_reward:.2f} credits**")
+    st.markdown(
+        f"- **Win-to-stake ratio:** {win_to_stake:.4f} → **{profit_pct:.2f}% {label} per game**")
+    st.sidebar.markdown(
+        "ℹ️ **Win-to-stake ratio** measures how much you earn on average per unit staked. If it's >1, you're profitable.")
+    st.markdown(f"- **Probability of reward ≥ 40:** {prob_double:.2%}")
+    st.markdown(f"- **Probability of losing everything:** {prob_zero:.2%}")
 
-    # Interaktivni histogram
-    df = pd.DataFrame({'Dobitak': outcomes})
-    fig = px.histogram(df, x="Dobitak", nbins=100,
-                       title="Distribucija dobitaka po igri",
-                       labels={"Dobitak": "Dobitak po igri (krediti)"},
+    # Histogram
+    df = pd.DataFrame({'Reward': outcomes})
+    fig = px.histogram(df, x="Reward", nbins=100,
+                       title="Distribution of Rewards per Game",
+                       labels={"Reward": "Reward per Game (credits)"},
                        template="plotly_white")
     st.plotly_chart(fig, use_container_width=True)
