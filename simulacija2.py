@@ -13,7 +13,6 @@ st.markdown("<h2 style='text-align: center;'>🎰 Casino Game Simulation </h2>",
 # --- Sidebar Inputs ---
 st.sidebar.header("🔧 Game Parameters")
 
-# Game parameter sliders and inputs
 P_MARK = st.sidebar.slider("Probability of marking a cell (P_MARK)",
                            min_value=0.01, max_value=0.1, value=0.025, step=0.005, format="%.3f")
 LIVES = st.sidebar.slider("Number of lives", 1, 5, 3)
@@ -23,75 +22,60 @@ REWARD_2x2 = st.sidebar.number_input("Reward for 2x2 block", value=40)
 MATRIX_SIZE = st.sidebar.selectbox("Matrix size", [4, 5, 6, 7, 8], index=2)
 N_SIMULATIONS = st.sidebar.number_input("Number of simulations", value=100000)
 
-# --- Convolution Filters ---
 filter_3x3 = np.ones((3, 3), dtype=int)
 filter_2x2 = np.ones((2, 2), dtype=int)
-
-# --- Reward Calculation Function ---
 
 
 def calculate_rewards_adjusted(matrix_bool, filter_3x3, filter_2x2, REWARD_3x3, REWARD_2x2):
     marked_int = matrix_bool.astype(int)
-
-    # Calculate 3x3 rewards (overlap allowed)
     conv_3x3 = convolve2d(marked_int, filter_3x3, mode='valid')
     mask_3x3 = (conv_3x3 == 9)
     reward = np.sum(mask_3x3) * REWARD_3x3
 
-    # Calculate 2x2 rewards (overlap allowed)
     conv_2x2 = convolve2d(marked_int, filter_2x2, mode='valid')
     mask_2x2 = (conv_2x2 == 4)
     reward += np.sum(mask_2x2) * REWARD_2x2
 
-    # Adjusted reward (2x2 not overlapping with any 3x3 block)
     reward2 = np.sum(mask_3x3) * REWARD_3x3
     used_mask = np.zeros_like(marked_int, dtype=bool)
 
-    # Mark cells used by 3x3 wins
     for i in range(conv_3x3.shape[0]):
         for j in range(conv_3x3.shape[1]):
             if conv_3x3[i, j] == 9:
                 used_mask[i:i+3, j:j+3] = True
 
-    # Add 2x2 rewards only if they don't overlap with 3x3 cells
     for i in range(conv_2x2.shape[0]):
         for j in range(conv_2x2.shape[1]):
             if conv_2x2[i, j] == 4 and not used_mask[i:i+2, j:j+2].any():
                 reward2 += REWARD_2x2
-                used_mask[i:i+2, j:j+2] = True  # Prevent further 2x2 overlaps
+                used_mask[i:i+2, j:j+2] = True
 
     return reward, reward2
-
-# --- Single Simulation Function ---
 
 
 def simulate_single_game():
     matrix = np.zeros((MATRIX_SIZE, MATRIX_SIZE), dtype=bool)
     lives = LIVES
 
-    # Mark cells until all lives are spent
     while lives > 0:
         newly_marked = (np.random.rand(
             MATRIX_SIZE, MATRIX_SIZE) < P_MARK) & (~matrix)
         if not newly_marked.any():
-            lives -= 1  # No new marks, lose a life
+            lives -= 1
         else:
-            matrix |= newly_marked  # Mark new cells
-            lives = LIVES  # Reset lives if any new cells are marked
+            matrix |= newly_marked
+            lives = LIVES
 
-    # Return both total reward and adjusted reward
     reward, reward2 = calculate_rewards_adjusted(
         matrix, filter_3x3, filter_2x2, REWARD_3x3, REWARD_2x2)
     return reward, reward2
 
 
-# --- Run Simulation on Button Click ---
 if st.button("🎲 Run Monte Carlo Simulation"):
     with st.spinner("Simulation in progress..."):
         outcomes = [simulate_single_game() for _ in range(int(N_SIMULATIONS))]
         rewards_all, rewards_strict = zip(*outcomes)
 
-    # --- Compute Statistics ---
     total_reward = sum(rewards_all)
     avg_reward = total_reward / N_SIMULATIONS
     win_to_stake = avg_reward / STAKE
@@ -109,23 +93,20 @@ if st.button("🎲 Run Monte Carlo Simulation"):
     label = "gain" if win_to_stake >= 1 else "loss"
     label_strict = "gain" if win_to_stake_strict >= 1 else "loss"
 
-    # --- Convert to DataFrames for Plotting ---
     reward_counts_strict = Counter(rewards_strict)
     df_strict = pd.DataFrame.from_dict(
         reward_counts_strict, orient='index').reset_index()
     df_strict.columns = ['Reward', 'Count']
-    df_strict = df_strict.sort_values('Reward')
+    df_strict = df_strict[df_strict["Reward"] <= 1500].sort_values('Reward')
 
     reward_counts_all = Counter(rewards_all)
     df_all = pd.DataFrame.from_dict(
         reward_counts_all, orient='index').reset_index()
     df_all.columns = ['Reward', 'Count']
-    df_all = df_all.sort_values('Reward')
+    df_all = df_all[df_all["Reward"] <= 1500].sort_values('Reward')
 
-    # --- Display Statistics and Charts ---
     col1, col2 = st.columns(2)
 
-    # --- With Overlap Panel ---
     with col1:
         st.markdown(
             "<h5 style='text-align: left;'>📊 With Overlap</h5>", unsafe_allow_html=True)
@@ -139,18 +120,28 @@ if st.button("🎲 Run Monte Carlo Simulation"):
         st.markdown(f"- **Probability of reward ≥ 40:** {prob_double:.5%}")
         st.markdown(f"- **Probability of losing everything:** {prob_zero:.5%}")
 
-        # Bar plot for full reward distribution
         fig_all = px.bar(
             df_all,
             x="Reward",
             y="Count",
-            title="Distribution of Rewards per Game ",
+            title="Distribution of Rewards per Game (With Overlap)",
             labels={"Reward": "Reward per Game", "Count": "Frequency"},
-            template="plotly_white"
+            template="plotly_dark",
+            color_discrete_sequence=["#00C49F"]
         )
+
+        fig_all.update_layout(
+            font=dict(family="Arial", size=13),
+            plot_bgcolor="#111111",
+            paper_bgcolor="#111111",
+            title_font=dict(size=16, family="Arial", color="white"),
+            xaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
+            yaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
+            bargap=0.05
+        )
+        fig_all.update_traces(marker_line_color="white", marker_line_width=0.6)
         st.plotly_chart(fig_all, use_container_width=True)
 
-    # --- No Overlap Panel ---
     with col2:
         st.markdown(
             "<h5 style='text-align: left;'>📊 No 2x2 Overlap with 3x3</h5>", unsafe_allow_html=True)
@@ -164,25 +155,36 @@ if st.button("🎲 Run Monte Carlo Simulation"):
         st.markdown(
             f"- **Probability of losing everything:** {prob_zero_strict:.5%}")
 
-        # Bar plot for adjusted reward distribution
         fig_strict = px.bar(
             df_strict,
             x="Reward",
             y="Count",
-            title="Distribution of Rewards per Game",
+            title="Distribution of Rewards per Game (No 2x2 Overlap)",
             labels={"Reward": "Reward per Game", "Count": "Frequency"},
-            template="plotly_white"
+            template="plotly_dark",
+            color_discrete_sequence=["#FF6E6E"]
         )
+
+        fig_strict.update_layout(
+            font=dict(family="Arial", size=13, color="white"),
+            plot_bgcolor="#111111",
+            paper_bgcolor="#111111",
+            title_font=dict(size=16, family="Arial", color="white"),
+            xaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
+            yaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
+            bargap=0.05
+        )
+        fig_strict.update_traces(
+            marker_line_color="white", marker_line_width=0.6)
         st.plotly_chart(fig_strict, use_container_width=True)
 
-    # --- Combined Reward Distribution (Excluding Zeros) ---
     st.markdown("<h5 style='text-align: left;'>📊 Combined Reward Distribution (No Zeros)</h5>",
                 unsafe_allow_html=True)
 
-    df_all_filtered = df_all[df_all["Reward"] != 0].copy()
+    df_all_filtered = df_all.copy()
     df_all_filtered["Type"] = "With Overlap"
 
-    df_strict_filtered = df_strict[df_strict["Reward"] != 0].copy()
+    df_strict_filtered = df_strict.copy()
     df_strict_filtered["Type"] = "No 2x2 Overlap"
 
     df_combined = pd.concat(
@@ -194,8 +196,27 @@ if st.button("🎲 Run Monte Carlo Simulation"):
         y="Count",
         color="Type",
         barmode="group",
-        title=None,
+        title="Comparison of Reward Distributions",
         labels={"Reward": "Reward per Game", "Count": "Frequency"},
-        template="plotly_white"
+        template="plotly_dark",
+        color_discrete_map={
+            "With Overlap": "#00C49F",
+            "No 2x2 Overlap": "#FF6E6E"
+        }
     )
+
+    fig_combined.update_layout(
+        font=dict(family="Arial", size=13, color="white"),
+        plot_bgcolor="#111111",
+        paper_bgcolor="#111111",
+        title_font=dict(size=16, family="Arial", color="white"),
+        xaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
+        yaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
+        legend=dict(title="", orientation="h", yanchor="bottom",
+                    y=1.02, xanchor="center", x=0.5),
+        bargap=0.05
+    )
+
+    fig_combined.update_traces(
+        marker_line_color="white", marker_line_width=0.6)
     st.plotly_chart(fig_combined, use_container_width=True)
