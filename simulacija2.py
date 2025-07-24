@@ -176,7 +176,7 @@ if st.button("🎲 Run Monte Carlo Simulation"):
         )
         st.plotly_chart(fig_strict, use_container_width=True)
 
-    st.markdown("<h5 style='text-align: left;'>📊 Combined Reward Distribution (No Zeros)</h5>",
+    st.markdown("<h5 style='text-align: left;'> Combined Reward Distribution (No Zeros)</h5>",
                 unsafe_allow_html=True)
 
     df_all_filtered = df_all[df_all["Reward"] != 0].copy()
