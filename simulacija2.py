@@ -110,6 +110,17 @@ if st.button("🎲 Run Monte Carlo Simulation"):
     label = "gain" if win_to_stake >= 1 else "loss"
     label_strict = "gain" if win_to_stake_strict >= 1 else "loss"
 
+    reward_counts_strict = Counter(rewards_strict)
+    df_strict = pd.DataFrame.from_dict(
+        reward_counts_strict, orient='index').reset_index()
+    df_strict.columns = ['Reward', 'Count']
+    df_strict = df_strict.sort_values('Reward')
+    reward_counts_all = Counter(rewards_all)
+    df_all = pd.DataFrame.from_dict(
+        reward_counts_all, orient='index').reset_index()
+    df_all.columns = ['Reward', 'Count']
+    df_all = df_all.sort_values('Reward')
+
     # Statistics display
     col1, col2 = st.columns(2)
 
@@ -126,12 +137,6 @@ if st.button("🎲 Run Monte Carlo Simulation"):
             "ℹ️ **Win-to-stake ratio** measures how much you earn on average per unit staked. If it's >1, you're profitable.")
         st.markdown(f"- **Probability of reward ≥ 40:** {prob_double:.5%}")
         st.markdown(f"- **Probability of losing everything:** {prob_zero:.5%}")
-
-        reward_counts_all = Counter(rewards_all)
-        df_all = pd.DataFrame.from_dict(
-            reward_counts_all, orient='index').reset_index()
-        df_all.columns = ['Reward', 'Count']
-        df_all = df_all.sort_values('Reward')
 
         fig_all = px.bar(
             df_all,
@@ -160,11 +165,6 @@ if st.button("🎲 Run Monte Carlo Simulation"):
             f"- **Probability of losing everything:** {prob_zero_strict:.5%}")
 
         # Bar chart
-        reward_counts_strict = Counter(rewards_strict)
-        df_strict = pd.DataFrame.from_dict(
-            reward_counts_strict, orient='index').reset_index()
-        df_strict.columns = ['Reward', 'Count']
-        df_strict = df_strict.sort_values('Reward')
 
         fig_strict = px.bar(
             df_strict,
@@ -175,3 +175,27 @@ if st.button("🎲 Run Monte Carlo Simulation"):
             template="plotly_white"
         )
         st.plotly_chart(fig_strict, use_container_width=True)
+
+    st.markdown("<h5 style='text-align: left;'>📊 Combined Reward Distribution (No Zeros)</h5>",
+                unsafe_allow_html=True)
+
+    df_all_filtered = df_all[df_all["Reward"] != 0].copy()
+    df_all_filtered["Type"] = "With Overlap"
+
+    df_strict_filtered = df_strict[df_strict["Reward"] != 0].copy()
+    df_strict_filtered["Type"] = "No 2x2 Overlap"
+
+    df_combined = pd.concat(
+        [df_all_filtered, df_strict_filtered], ignore_index=True)
+
+    fig_combined = px.bar(
+        df_combined,
+        x="Reward",
+        y="Count",
+        color="Type",
+        barmode="group",
+        title=None,
+        labels={"Reward": "Reward per Game", "Count": "Frequency"},
+        template="plotly_white"
+    )
+    st.plotly_chart(fig_combined, use_container_width=True)
