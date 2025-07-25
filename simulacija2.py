@@ -132,8 +132,6 @@ if st.button("🎲 Run Monte Carlo Simulation"):
 
         fig_all.update_layout(
             font=dict(family="Arial", size=13),
-            plot_bgcolor="#111111",
-            paper_bgcolor="#111111",
             title_font=dict(size=16, family="Arial", color="white"),
             xaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
             yaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
@@ -167,8 +165,6 @@ if st.button("🎲 Run Monte Carlo Simulation"):
 
         fig_strict.update_layout(
             font=dict(family="Arial", size=13, color="white"),
-            plot_bgcolor="#111111",
-            paper_bgcolor="#111111",
             title_font=dict(size=16, family="Arial", color="white"),
             xaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
             yaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
@@ -207,8 +203,6 @@ if st.button("🎲 Run Monte Carlo Simulation"):
 
     fig_combined.update_layout(
         font=dict(family="Arial", size=13, color="white"),
-        plot_bgcolor="#111111",
-        paper_bgcolor="#111111",
         title_font=dict(size=16, family="Arial", color="white"),
         xaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
         yaxis=dict(title_font=dict(size=13), tickfont=dict(size=11)),
