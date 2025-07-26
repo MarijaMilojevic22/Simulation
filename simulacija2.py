@@ -127,8 +127,8 @@ if st.button("🎲 Run Monte Carlo Simulation"):
             f"- **Average reward per game:** **{avg_reward:.2f} credits**")
         st.markdown(
             f"- **Win-to-stake ratio:** {win_to_stake:.4f} → **{profit_pct:.2f}% {label} per game**")
-        st.markdown(f"- **Probability of reward ≥ 40:** {prob_double:.5%}")
-        st.markdown(f"- **Probability of losing everything:** {prob_zero:.5%}")
+        st.markdown(f"- **Probability of reward ≥ 40:** {prob_double:.2%}")
+        st.markdown(f"- **Probability of losing everything:** {prob_zero:.2%}")
 
     with col2:
         st.markdown(
@@ -139,13 +139,12 @@ if st.button("🎲 Run Monte Carlo Simulation"):
         st.markdown(
             f"- **Win-to-stake ratio:** {win_to_stake_strict:.4f} → **{profit_pct_strict:.2f}% {label_strict} per game**")
         st.markdown(
-            f"- **Probability of reward ≥ 40:** {prob_double_strict:.5%}")
+            f"- **Probability of reward ≥ 40:** {prob_double_strict:.2%}")
         st.markdown(
-            f"- **Probability of losing everything:** {prob_zero_strict:.5%}")
+            f"- **Probability of losing everything:** {prob_zero_strict:.2%}")
 
-     # --- Combined Distribution
-    st.markdown("<h5 style='text-align: left;'> Combined Reward Distribution (All Values)</h5>",
-                unsafe_allow_html=True)
+            
+     # --- Combined Distribution ---
 
     df_all_full = df_all.copy()
     df_all_full["Type"] = "With Overlap"
@@ -167,9 +166,8 @@ if st.button("🎲 Run Monte Carlo Simulation"):
         marker_line_color="white", marker_line_width=0.6)
     st.plotly_chart(fig_combined_full, use_container_width=True)
 
+            
     # --- Combined Distribution (Filtered: Reward ≤ 500) ---
-    st.markdown("<h5 style='text-align: left;'> Combined Reward Distribution (≤ 500)</h5>",
-                unsafe_allow_html=True)
 
     df_all_filtered = df_all[df_all["Reward"] <= 500].copy()
     df_all_filtered["Type"] = "With Overlap"
@@ -191,9 +189,8 @@ if st.button("🎲 Run Monte Carlo Simulation"):
         marker_line_color="white", marker_line_width=0.6)
     st.plotly_chart(fig_combined, use_container_width=True)
 
+            
     # --- Combined Tail Bar Chart for Rewards > 500 ---
-    st.markdown("<h5 style='text-align: left;'> Tail Distribution for Rewards > 500</h5>",
-                unsafe_allow_html=True)
 
     df_tail = df_all[df_all["Reward"] > 500].copy()
     df_tail["Type"] = "With Overlap"
