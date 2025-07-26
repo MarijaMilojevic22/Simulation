@@ -28,7 +28,7 @@ filter_2x2 = np.ones((2, 2), dtype=int)
 # --- Reward Calculation Function ---
 
 
-def calculate_rewards_adjusted(matrix_bool, filter_3x3, filter_2x2, REWARD_3x3, REWARD_2x2):
+def calculate_rewards(matrix_bool, filter_3x3, filter_2x2, REWARD_3x3, REWARD_2x2):
     marked_int = matrix_bool.astype(int)
     conv_3x3 = convolve2d(marked_int, filter_3x3, mode='valid')
     mask_3x3 = (conv_3x3 == 9)
@@ -70,7 +70,7 @@ def simulate_single_game():
             matrix |= newly_marked
             lives = LIVES
 
-    reward, reward2 = calculate_rewards_adjusted(
+    reward, reward2 = calculate_rewards(
         matrix, filter_3x3, filter_2x2, REWARD_3x3, REWARD_2x2)
     return reward, reward2
 
