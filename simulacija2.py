@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.express as px
 from collections import Counter
 
-# I have written code for two simulations: one that allows full overlap (including 3x3 with 3x3, 2x2 with 3x3, and 2x2 with 2x2 blocks), and another that restricts overlap between 2x2 and 3x3 blocks.
+# I have written code for cases of one simulations: one that allows full overlap (including 3x3 with 3x3, 2x2 with 3x3, and 2x2 with 2x2 blocks), and another that restricts overlap between 2x2 and 3x3 blocks.
 # Additionally, I developed a Streamlit application that enables users to modify initial parameters, run custom simulations, and compare the results interactively. The app displays probabilities, summary statistics, and visualizations side by side, combining outcomes from both simulations.
 
 
