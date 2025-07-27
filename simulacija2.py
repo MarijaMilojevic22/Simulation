@@ -130,6 +130,37 @@ if st.button("🎲 Run Monte Carlo Simulation"):
     label = "gain" if win_to_stake >= 1 else "loss"
     label_strict = "gain" if win_to_stake_strict >= 1 else "loss"
 
+    # --- Layout ---
+
+    # Create a two-column layout in Streamlit.
+    # Display summary metrics for both simulation types:
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown(
+            "<h5 style='text-align: left;'> With Overlap</h5>", unsafe_allow_html=True)
+        st.markdown(f"- **Total reward:** {total_reward:,.0f} credits")
+        st.markdown(
+            f"- **Average reward per game:** **{avg_reward:.2f} credits**")
+        st.markdown(
+            f"- **Win-to-stake ratio:** {win_to_stake:.4f} → **{profit_pct:.2f}% {label} per game**")
+        st.markdown(f"- **Probability of reward ≥ 40:** {prob_double:.2%}")
+        st.markdown(f"- **Probability of losing everything:** {prob_zero:.2%}")
+
+    with col2:
+        st.markdown(
+            "<h5 style='text-align: left;'> No 2x2 Overlap with 3x3</h5>", unsafe_allow_html=True)
+        st.markdown(f"- **Total reward:** {total_reward_strict:,.0f} credits")
+        st.markdown(
+            f"- **Average reward per game:** **{avg_reward_strict:.2f} credits**")
+        st.markdown(
+            f"- **Win-to-stake ratio:** {win_to_stake_strict:.4f} → **{profit_pct_strict:.2f}% {label_strict} per game**")
+        st.markdown(
+            f"- **Probability of reward ≥ 40:** {prob_double_strict:.2%}")
+        st.markdown(
+            f"- **Probability of losing everything:** {prob_zero_strict:.2%}")
+
     # --- DataFrames ---
 
     # Convert reward frequency data into DataFrames for both simulation modes.
@@ -152,38 +183,7 @@ if st.button("🎲 Run Monte Carlo Simulation"):
         lambda x: '≤ 500' if x <= 500 else '> 500')
     df_all = df_all[df_all["Reward"] <= 1500].sort_values('Reward')
 
-    # --- Layout ---
-
-    # Create a two-column layout in Streamlit.
-    # Display summary metrics for both simulation types:
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown(
-            "<h5 style='text-align: left;'> With Overlap</h5>", unsafe_allow_html=True)
-        st.markdown(f"- **Total reward:** {total_reward:,.0f} credits")
-        st.markdown(
-            f"- **Average reward per game:** **{avg_reward:.2f} credits**")
-        st.markdown(
-            f"- **Win-to-stake ratio:** {win_to_stake:.4f} → **{profit_pct:.2f}% {label} per game**")
-        st.markdown(f"- **Probability of reward ≥ 40:** {prob_double:.5%}")
-        st.markdown(f"- **Probability of losing everything:** {prob_zero:.5%}")
-
-    with col2:
-        st.markdown(
-            "<h5 style='text-align: left;'> No 2x2 Overlap with 3x3</h5>", unsafe_allow_html=True)
-        st.markdown(f"- **Total reward:** {total_reward_strict:,.0f} credits")
-        st.markdown(
-            f"- **Average reward per game:** **{avg_reward_strict:.2f} credits**")
-        st.markdown(
-            f"- **Win-to-stake ratio:** {win_to_stake_strict:.4f} → **{profit_pct_strict:.2f}% {label_strict} per game**")
-        st.markdown(
-            f"- **Probability of reward ≥ 40:** {prob_double_strict:.5%}")
-        st.markdown(
-            f"- **Probability of losing everything:** {prob_zero_strict:.5%}")
-
-     # --- Combined Distribution ---
+    # --- Combined Distribution ---
 
     # Generate three grouped bar charts using Plotly:
     # 1. Full reward distribution (all values)
@@ -249,7 +249,7 @@ if st.button("🎲 Run Monte Carlo Simulation"):
             df_tail_combined, x="Reward", y="Count", color="Type",
             barmode="group",
             labels={"Reward": "Reward per Game", "Count": "Frequency"},
-            title="Tail of Reward Distribution (> 500)",
+            title="Comparison of Tail Reward Distributions (> 500)",
             template="plotly_dark",
             color_discrete_map={"With Overlap": "#FFD700",
                                 "No 2x2 Overlap with 3x3": "#E003E0"}
